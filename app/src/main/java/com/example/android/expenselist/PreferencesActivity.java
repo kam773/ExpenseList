@@ -5,4 +5,7 @@ package com.example.android.expenselist;
  */
 
 public class PreferencesActivity {
+
+
+
 }
