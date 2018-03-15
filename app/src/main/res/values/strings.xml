@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ExpenseList</string>
+
+    <string name="save">Save</string>
+
+    <string name="preferences">Preferences</string>
+
+    <string name="add_new_expense">New Expense</string>
+</resources>

@@ -53,6 +53,17 @@ public class Expense {
         public String getName() {
             return name;
         }
+
+        public static int getId(String categoryName) {
+            int counter = 0;
+            for(ExpenseCategory category: values()) {
+                if(category.name().equals(categoryName))
+                    return counter;
+
+                counter++;
+            }
+            return -1;
+        }
     }
 }
 

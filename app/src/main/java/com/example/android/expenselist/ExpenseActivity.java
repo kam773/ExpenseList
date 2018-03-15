@@ -1,8 +1,10 @@
 package com.example.android.expenselist;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -15,26 +17,37 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import db.ExpenseDbHelper;
+
 /**
  * Created by Kamil on 2018-03-12.
  */
 
 public class ExpenseActivity extends AppCompatActivity {
 
+    private static final String PREF_LAST_CATEGORY = "pref.last.category";
+
+    SharedPreferences sharedPreferences;
+
     private EditText titleEditText;
     private EditText priceEditText;
     private Spinner categorySpinner;
+
+    private ExpenseDbHelper mDbHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
         titleEditText = (EditText) findViewById(R.id.expense_name);
         priceEditText = (EditText) findViewById(R.id.expensePrice);
         categorySpinner = (Spinner) findViewById(R.id.expense_category);
 
         categorySpinner.setAdapter(new CategoryAdapter());
+        loadLastCategory(categorySpinner);
 
         Button expenseButton = (Button) findViewById(R.id.add_expense);
         expenseButton.setOnClickListener(new View.OnClickListener() {
@@ -44,6 +57,8 @@ public class ExpenseActivity extends AppCompatActivity {
             }
         });
 
+        mDbHelper = new ExpenseDbHelper(this);
+
     }
     private void addNewExpense() {
         String title = titleEditText.getText().toString();
@@ -51,7 +66,25 @@ public class ExpenseActivity extends AppCompatActivity {
         Expense.ExpenseCategory category = (Expense.ExpenseCategory) categorySpinner.getSelectedItem();
         Expense expense = new Expense(title, price, category);
         ExpenseDatabase.addExpense(expense);
+
+        saveLastCategory(category);
         finish();
+    }
+
+    private void saveLastCategory(Expense.ExpenseCategory expenseCategory) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PREF_LAST_CATEGORY, expenseCategory.name());
+        editor.apply();
+    }
+
+    private void loadLastCategory(Spinner categorySpinner) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String lastCategoryName = prefs.getString(PREF_LAST_CATEGORY, "");
+        if(!lastCategoryName.isEmpty()) {
+            int id = Expense.ExpenseCategory.getId(lastCategoryName);
+            categorySpinner.setSelection(id);
+        }
     }
 
     private class CategoryAdapter extends BaseAdapter {
